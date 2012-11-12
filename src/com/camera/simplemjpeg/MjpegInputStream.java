@@ -30,7 +30,8 @@ public class MjpegInputStream extends DataInputStream {
     private final byte[] EOF_MARKER = { (byte) 0xFF, (byte) 0xD9 };
     private final String CONTENT_LENGTH = "Content-Length";
     private final static int HEADER_MAX_LENGTH = 100;
-    private final static int FRAME_MAX_LENGTH = 40000 + HEADER_MAX_LENGTH;
+    //private final static int FRAME_MAX_LENGTH = 40000 + HEADER_MAX_LENGTH;
+    private final static int FRAME_MAX_LENGTH = 200000;
     private int mContentLength = -1;
     byte[] header =null;
     byte[] frameData =null;
@@ -39,6 +40,9 @@ public class MjpegInputStream extends DataInputStream {
     
     int skip=1;
     int count=0;
+    
+    private static final String TAG="TEST";
+    private static final boolean DEBUG=true;
     
     static {
     	System.loadLibrary("ImageProc");
@@ -59,7 +63,7 @@ public class MjpegInputStream extends DataInputStream {
     public MjpegInputStream(InputStream in) {
         super(new BufferedInputStream(in, FRAME_MAX_LENGTH));
     }
-	
+    
     private int getEndOfSeqeunce(DataInputStream in, byte[] sequence) 
         throws IOException 
     {
@@ -87,9 +91,35 @@ public class MjpegInputStream extends DataInputStream {
         int end = getEndOfSeqeunce(in, sequence);
         return (end < 0) ? (-1) : (end - sequence.length);
     }
+    
+    private int getEndOfSeqeunceSimplified(DataInputStream in, byte[] sequence) 
+            throws IOException 
+	{
+    		int startPos = (int)(0.9*mContentLength);
+    		int endPos = (int)(1.1*mContentLength);
+    		 
+    		skipBytes(headerLen+startPos);
+    		 
+    		
+            int seqIndex = 0;
+            byte c;
+            for(int i=0; i < endPos-startPos ; i++) {
+                c = (byte) in.readUnsignedByte();
+                if(c == sequence[seqIndex]) {
+                    seqIndex++;
+                    if(seqIndex == sequence.length){
 
+                    	return headerLen + startPos + i + 1;
+                    }
+                } else seqIndex = 0;
+            }
+            
+
+            return -1;
+	}
+    
     private int parseContentLength(byte[] headerBytes) 
-        throws IOException, NumberFormatException
+        throws IOException, NumberFormatException, IllegalArgumentException
     {
         ByteArrayInputStream headerIn = new ByteArrayInputStream(headerBytes);
         Properties props = new Properties();
@@ -99,30 +129,58 @@ public class MjpegInputStream extends DataInputStream {
 
     public Bitmap readMjpegFrame() throws IOException {
         mark(FRAME_MAX_LENGTH);
-        int headerLen = getStartOfSequence(this, SOI_MARKER);
+        int headerLen;
+        try{
+        	headerLen = getStartOfSequence(this, SOI_MARKER);
+        }catch(IOException e){
+        	if(DEBUG) Log.d(TAG,"IOException in betting headerLen.");
+        	reset();
+        	return null;
+        }
         reset();
 
         if(header==null || headerLen != headerLenPrev){
         	header = new byte[headerLen];
-        	Log.d("TEST","header renewed");
+        	if(DEBUG) Log.d(TAG,"header renewed "+headerLenPrev+" -> "+headerLen);
         }
         headerLenPrev = headerLen;
         readFully(header);
 
+        int ContentLengthNew = -1;
         try {
-            mContentLength = parseContentLength(header);
+            ContentLengthNew = parseContentLength(header);
         } catch (NumberFormatException nfe) { 
-            mContentLength = getEndOfSeqeunce(this, EOF_MARKER); 
+        	ContentLengthNew = getEndOfSeqeunceSimplified(this, EOF_MARKER); 
+        	
+        	if(ContentLengthNew < 0){
+        		if(DEBUG) Log.d(TAG,"Worst case for finding EOF_MARKER");
+        		reset();
+        		ContentLengthNew = getEndOfSeqeunce(this, EOF_MARKER); 
+        	}
+        }catch (IllegalArgumentException e) { 
+        	if(DEBUG) Log.d(TAG,"IllegalArgumentException in parseContentLength");
+        	ContentLengthNew = getEndOfSeqeunceSimplified(this, EOF_MARKER); 
+        	
+        	if(ContentLengthNew < 0){
+        		if(DEBUG) Log.d(TAG,"Worst case for finding EOF_MARKER");
+        		reset();
+        		ContentLengthNew = getEndOfSeqeunce(this, EOF_MARKER); 
+        	}
+        }catch (IOException e) { 
+        	if(DEBUG) Log.d(TAG,"IOException in parseContentLength");
+        	reset();
+        	return null;
         }
+        mContentLength = ContentLengthNew;
         reset();
         
         if(frameData==null){
-        	frameData = new byte[FRAME_MAX_LENGTH*2];
-        	Log.d("TEST","frameData renewed cl="+mContentLength);
+        	frameData = new byte[FRAME_MAX_LENGTH];
+        	if(DEBUG) Log.d(TAG,"frameData newed cl="+FRAME_MAX_LENGTH);
         }
-        if( mContentLength>FRAME_MAX_LENGTH*2){
-        	frameData = new byte[mContentLength];
-        	Log.d("TEST","frameData renewed cl="+mContentLength);
+        if(mContentLength + HEADER_MAX_LENGTH > FRAME_MAX_LENGTH){
+        	frameData = new byte[mContentLength + HEADER_MAX_LENGTH];
+        	if(DEBUG) Log.d(TAG,"frameData renewed cl="+(mContentLength + HEADER_MAX_LENGTH));
         }
         
         skipBytes(headerLen);
@@ -138,30 +196,58 @@ public class MjpegInputStream extends DataInputStream {
     
     public void readMjpegFrame(Bitmap bmp) throws IOException {
         mark(FRAME_MAX_LENGTH);
-        int headerLen = getStartOfSequence(this, SOI_MARKER);
+        int headerLen;
+        try{
+        	headerLen = getStartOfSequence(this, SOI_MARKER);
+        }catch(IOException e){
+        	if(DEBUG) Log.d(TAG,"IOException in betting headerLen.");
+        	reset();
+        	return;
+        }
         reset();
 
         if(header==null || headerLen != headerLenPrev){
         	header = new byte[headerLen];
-        	Log.d("TEST","header renewed");
+        	if(DEBUG) Log.d(TAG,"header renewed "+headerLenPrev+" -> "+headerLen);
         }
         headerLenPrev = headerLen;
         readFully(header);
 
+        int ContentLengthNew = -1;
         try {
-            mContentLength = parseContentLength(header);
+            ContentLengthNew = parseContentLength(header);
         } catch (NumberFormatException nfe) { 
-            mContentLength = getEndOfSeqeunce(this, EOF_MARKER); 
+        	ContentLengthNew = getEndOfSeqeunceSimplified(this, EOF_MARKER); 
+        	
+        	if(ContentLengthNew < 0){
+        		if(DEBUG) Log.d(TAG,"Worst case for finding EOF_MARKER");
+        		reset();
+        		ContentLengthNew = getEndOfSeqeunce(this, EOF_MARKER); 
+        	}
+        }catch (IllegalArgumentException e) { 
+        	if(DEBUG) Log.d(TAG,"IllegalArgumentException in parseContentLength");
+        	ContentLengthNew = getEndOfSeqeunceSimplified(this, EOF_MARKER); 
+        	
+        	if(ContentLengthNew < 0){
+        		if(DEBUG) Log.d(TAG,"Worst case for finding EOF_MARKER");
+        		reset();
+        		ContentLengthNew = getEndOfSeqeunce(this, EOF_MARKER); 
+        	}
+        }catch (IOException e) { 
+        	if(DEBUG) Log.d(TAG,"IOException in parseContentLength");
+        	reset();
+        	return;
         }
+        mContentLength = ContentLengthNew;
         reset();
         
         if(frameData==null){
-        	frameData = new byte[FRAME_MAX_LENGTH*2];
-        	Log.d("TEST","frameData renewed cl="+mContentLength);
+        	frameData = new byte[FRAME_MAX_LENGTH];
+        	if(DEBUG) Log.d(TAG,"frameData newed cl="+FRAME_MAX_LENGTH);
         }
-        if( mContentLength>FRAME_MAX_LENGTH*2){
-        	frameData = new byte[mContentLength];
-        	Log.d("TEST","frameData renewed cl="+mContentLength);
+        if(mContentLength + HEADER_MAX_LENGTH > FRAME_MAX_LENGTH){
+        	frameData = new byte[mContentLength + HEADER_MAX_LENGTH];
+        	if(DEBUG) Log.d(TAG,"frameData renewed cl="+(mContentLength + HEADER_MAX_LENGTH));
         }
         
         skipBytes(headerLen);
