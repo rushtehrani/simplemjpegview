@@ -48,7 +48,7 @@ public class MjpegInputStream extends DataInputStream {
     	System.loadLibrary("ImageProc");
     }
     public native void pixeltobmp(byte[] jp, int l, Bitmap bmp);
-	
+    public native void freeCameraMemory();
 	
     public static MjpegInputStream read(String surl) {
     	try {

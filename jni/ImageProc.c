@@ -216,6 +216,12 @@ void processimage (const void *p, int l)
 
 	row_stride = mycinfo.image_width * mycinfo.num_components;
 
+	if(rgb == NULL){
+		IMG_WIDTH=mycinfo.image_width;
+		IMG_HEIGHT=mycinfo.image_height;
+		rgb = (int *)malloc(sizeof(int) * (IMG_WIDTH*IMG_HEIGHT));
+	}
+
 	if(jpegbuffer==NULL){
 		jpegbuffer = (*mycinfo.mem->alloc_sarray)
 			((j_common_ptr) &mycinfo, JPOOL_IMAGE, row_stride, 1);
@@ -293,4 +299,11 @@ void Java_com_camera_simplemjpeg_MjpegInputStream_pixeltobmp( JNIEnv* env,jobjec
 			AndroidBitmap_unlockPixels(env, bmp);
 
 		(*env)->ReleaseByteArrayElements(env, jp, p, 0);
+}
+
+void Java_com_camera_simplemjpeg_MjpegInputStream_freeCameraMemory( JNIEnv* env,jobject thiz){
+
+	if(rgb) free(rgb);
+	rgb = NULL;
+
 }

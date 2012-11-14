@@ -61,6 +61,11 @@ public class MjpegActivity extends Activity {
 
     public void onDestroy() {
     	if(DEBUG) Log.d(TAG,"onDestroy()");
+    	
+    	if(mv!=null){
+    		mv.freeCameraMemory();
+    	}
+    	
         super.onDestroy();
     }
     

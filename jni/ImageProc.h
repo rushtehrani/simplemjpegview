@@ -2,6 +2,7 @@
 #include <android/log.h>
 #include <android/bitmap.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <jpeglib.h>
 #include <setjmp.h>
 
@@ -11,11 +12,10 @@
 
 #define abs_mcr(x) ((x)>0 ? (x) : -(x))
 
-// hard-coded image size also exists in MjpegActivity.java
-#define IMG_WIDTH 640
-#define IMG_HEIGHT 480
+int IMG_WIDTH=-1;
+int IMG_HEIGHT=-1;
 
-static int rgb[IMG_WIDTH*IMG_HEIGHT];
+int *rgb=NULL;
 
 /* for libjpeg */
 typedef struct {
@@ -43,4 +43,4 @@ METHODDEF(void) memory_term_source (j_decompress_ptr cinfo);
 void processimage (const void *p, int l);
 
 void Java_com_camera_simplemjpeg_MjpegInputStream_pixeltobmp(JNIEnv* env,jobject thiz, jbyteArray jp, jint l, jobject bmp);
-
+void Java_com_camera_simplemjpeg_MjpegInputStream_freeCameraMemory(JNIEnv* env,jobject thiz);

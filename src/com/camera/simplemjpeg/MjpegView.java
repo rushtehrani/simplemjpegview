@@ -47,7 +47,7 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
 	private boolean suspending = false;
 	
 	private Bitmap bmp = null;
-	// hard-coded image size also exists in ImageProc.h
+	// hard-coded image size
 	public static final int IMG_WIDTH=640;
 	public static final int IMG_HEIGHT=480;
 
@@ -225,6 +225,12 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    public void freeCameraMemory(){
+    	if(mIn!=null){
+    		mIn.freeCameraMemory();
+    	}
+    }
+    
     public MjpegView(Context context, AttributeSet attrs) { 
         super(context, attrs); init(context); 
     }
