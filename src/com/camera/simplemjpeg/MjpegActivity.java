@@ -17,7 +17,7 @@ import android.view.WindowManager;
 
 public class MjpegActivity extends Activity {
 	private static final boolean DEBUG=false;
-    private static final String TAG = "MjpegActivity";
+    private static final String TAG = "MJPEG";
 
     private MjpegView mv;
 

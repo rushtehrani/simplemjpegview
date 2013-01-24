@@ -41,8 +41,8 @@ public class MjpegInputStream extends DataInputStream {
     int skip=1;
     int count=0;
     
-    private static final String TAG="TEST";
-    private static final boolean DEBUG=true;
+    private static final String TAG="MJPEG";
+    private static final boolean DEBUG=false;
     
     static {
     	System.loadLibrary("ImageProc");
