@@ -19,19 +19,18 @@ public class MjpegActivity extends Activity {
 	private static final boolean DEBUG=false;
     private static final String TAG = "MJPEG";
 
-    private MjpegView mv;
-
+    private MjpegView mv = null;
+    String URL = "http://192.168.2.1/?action=stream"; 
+    
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        String URL = "http://192.168.2.1/?action=stream"; 
-        
+
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 
         WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        
         setContentView(R.layout.main);
-
         mv = (MjpegView) findViewById(R.id.mv);      
-
         new DoRead().execute(URL);
     }
 
@@ -52,7 +51,9 @@ public class MjpegActivity extends Activity {
     public void onPause() {
     	if(DEBUG) Log.d(TAG,"onPause()");
         super.onPause();
-        mv.stopPlayback();
+        if(mv!=null){
+        	mv.stopPlayback();
+        }
     }
     public void onStop() {
     	if(DEBUG) Log.d(TAG,"onStop()");
