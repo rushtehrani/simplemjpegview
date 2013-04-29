@@ -1,6 +1,14 @@
 Simple Mjpeg-streaming viewer for android.
 
+This application is also available from Google Play.
+
+https://play.google.com/store/apps/details?id=com.tk.android.simplemjpeg
+
+
+
 -------
+
+
 
 This software is based in part on the work of the Independent JPEG Group.
 
