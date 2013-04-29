@@ -23,6 +23,7 @@ public class MjpegActivity extends Activity {
     private static final String TAG = "MJPEG";
 
     private MjpegView mv = null;
+    String URL;
     
     // for settings (network and resolution)
     private static final int REQUEST_SETTINGS = 0;
@@ -49,13 +50,7 @@ public class MjpegActivity extends Activity {
         ip_ad4 = preferences.getInt("ip_ad4", ip_ad4);
         ip_port = preferences.getInt("ip_port", ip_port);
         ip_command = preferences.getString("ip_command", ip_command);
-        
-        setContentView(R.layout.main);
-        mv = (MjpegView) findViewById(R.id.mv);  
-        if(mv != null){
-        	mv.setResolution(width, height);
-        }
-        
+                
         StringBuilder sb = new StringBuilder();
         String s_http = "http://";
         String s_dot = ".";
@@ -73,8 +68,13 @@ public class MjpegActivity extends Activity {
         sb.append(ip_port);
         sb.append(s_slash);
         sb.append(ip_command);
-        String URL = new String(sb);
+        URL = new String(sb);
 
+        setContentView(R.layout.main);
+        mv = (MjpegView) findViewById(R.id.mv);  
+        if(mv != null){
+        	mv.setResolution(width, height);
+        }
         new DoRead().execute(URL);
     }
 
