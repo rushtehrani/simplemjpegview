@@ -250,7 +250,7 @@ void processimage (const void *p, int l)
 	
 }
 
-void Java_com_camera_simplemjpeg_MjpegInputStream_pixeltobmp( JNIEnv* env,jobject thiz,
+int Java_com_camera_simplemjpeg_MjpegInputStream_pixeltobmp( JNIEnv* env,jobject thiz,
 	 jbyteArray jp, jint l, jobject bmp){
 
 
@@ -275,14 +275,20 @@ void Java_com_camera_simplemjpeg_MjpegInputStream_pixeltobmp( JNIEnv* env,jobjec
 			if ((ret = AndroidBitmap_getInfo(env, bmp, &info)) < 0) {
 				LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
 				(*env)->ReleaseByteArrayElements(env, jp, p, 0);
-				return;
+				return -1;
 			}
 
 			if (info.format != ANDROID_BITMAP_FORMAT_RGBA_8888) {
 				LOGE("Bitmap format is not RGBA_8888 !");
 				(*env)->ReleaseByteArrayElements(env, jp, p, 0);
-				return;
+				return -1;
 			}
+			if (info.width != IMG_WIDTH || info.height != IMG_HEIGHT){
+				LOGE("Bitmap size differs !");
+				(*env)->ReleaseByteArrayElements(env, jp, p, 0);
+				return -1;
+			}
+			
 
 			if ((ret = AndroidBitmap_lockPixels(env, bmp, &pixels)) < 0) {
 				LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
@@ -299,6 +305,8 @@ void Java_com_camera_simplemjpeg_MjpegInputStream_pixeltobmp( JNIEnv* env,jobjec
 			AndroidBitmap_unlockPixels(env, bmp);
 
 		(*env)->ReleaseByteArrayElements(env, jp, p, 0);
+		
+		return 0;
 }
 
 void Java_com_camera_simplemjpeg_MjpegInputStream_freeCameraMemory( JNIEnv* env,jobject thiz){

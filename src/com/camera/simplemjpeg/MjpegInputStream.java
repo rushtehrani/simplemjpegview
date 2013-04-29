@@ -47,7 +47,7 @@ public class MjpegInputStream extends DataInputStream {
     static {
     	System.loadLibrary("ImageProc");
     }
-    public native void pixeltobmp(byte[] jp, int l, Bitmap bmp);
+    public native int pixeltobmp(byte[] jp, int l, Bitmap bmp);
     public native void freeCameraMemory();
 	
     public static MjpegInputStream read(String surl) {
@@ -194,7 +194,7 @@ public class MjpegInputStream extends DataInputStream {
         }
     }
     
-    public void readMjpegFrame(Bitmap bmp) throws IOException {
+    public int readMjpegFrame(Bitmap bmp) throws IOException {
         mark(FRAME_MAX_LENGTH);
         int headerLen;
         try{
@@ -202,7 +202,7 @@ public class MjpegInputStream extends DataInputStream {
         }catch(IOException e){
         	if(DEBUG) Log.d(TAG,"IOException in betting headerLen.");
         	reset();
-        	return;
+        	return -1;
         }
         reset();
 
@@ -236,7 +236,7 @@ public class MjpegInputStream extends DataInputStream {
         }catch (IOException e) { 
         	if(DEBUG) Log.d(TAG,"IOException in parseContentLength");
         	reset();
-        	return;
+        	return -1;
         }
         mContentLength = ContentLengthNew;
         reset();
@@ -255,8 +255,9 @@ public class MjpegInputStream extends DataInputStream {
         readFully(frameData, 0, mContentLength);
 
         if(count++%skip==0){
-        	pixeltobmp(frameData, mContentLength, bmp);
+        	return pixeltobmp(frameData, mContentLength, bmp);
         }else{
+        	return 0;
         }
     }
     public void setSkip(int s){

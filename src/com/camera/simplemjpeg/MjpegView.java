@@ -47,9 +47,11 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
 	private boolean suspending = false;
 	
 	private Bitmap bmp = null;
-	// hard-coded image size
-	public static final int IMG_WIDTH=640;
-	public static final int IMG_HEIGHT=480;
+	
+	// image size
+
+	public int IMG_WIDTH=640;
+	public int IMG_HEIGHT=480;
 
     public class MjpegViewThread extends Thread {
         private SurfaceHolder mSurfaceHolder;
@@ -128,8 +130,13 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                 		if(bmp==null){
                 			bmp = Bitmap.createBitmap(IMG_WIDTH, IMG_HEIGHT, Bitmap.Config.ARGB_8888);
                 		}
-                		mIn.readMjpegFrame(bmp);
+                		int ret = mIn.readMjpegFrame(bmp);
 
+                		if(ret == -1)
+                		{
+                			return;
+                		}
+                		
                         destRect = destRect(bmp.getWidth(),bmp.getHeight());
                         
                         c = mSurfaceHolder.lockCanvas();
@@ -256,4 +263,9 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
     public void setOverlayBackgroundColor(int c) { overlayBackgroundColor = c; }
     public void setOverlayPosition(int p) { ovlPos = p; }
     public void setDisplayMode(int s) { displayMode = s; }
+    
+    public void setResolution(int w, int h){
+    	IMG_WIDTH = w;
+    	IMG_HEIGHT = h;
+    }
 }

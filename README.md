@@ -1,11 +1,5 @@
 Simple Mjpeg-streaming viewer for android.
 
-* Please set URL of camera in MjpegActivity.java.
-
-* Please set the resolution of movie in MjpegView.java.
- (The default resolution is 640x480).
-
-
 -------
 
 This software is based in part on the work of the Independent JPEG Group.
