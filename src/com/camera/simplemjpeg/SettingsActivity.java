@@ -345,6 +345,14 @@ public class SettingsActivity extends Activity {
         				
         				String s;
         				
+        				s = width_input.getText().toString();
+        				if(!"".equals(s)){
+        					width = Integer.parseInt(s);
+        				}
+        				s = height_input.getText().toString();
+        				if(!"".equals(s)){
+        					height = Integer.parseInt(s);
+        				}
         				s = address1_input.getText().toString();
         				if(!"".equals(s)){
         					ip_ad1 = Integer.parseInt(s);
