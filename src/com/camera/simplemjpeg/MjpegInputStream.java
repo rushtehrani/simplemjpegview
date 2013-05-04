@@ -95,8 +95,8 @@ public class MjpegInputStream extends DataInputStream {
     private int getEndOfSeqeunceSimplified(DataInputStream in, byte[] sequence) 
             throws IOException 
 	{
-    		int startPos = (int)(0.9*mContentLength);
-    		int endPos = (int)(1.1*mContentLength);
+    		int startPos = mContentLength/2;
+    		int endPos = 3*mContentLength/2;
     		 
     		skipBytes(headerLen+startPos);
     		 
