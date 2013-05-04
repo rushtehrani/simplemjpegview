@@ -230,6 +230,13 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                 retry = false;
             } catch (InterruptedException e) {}
         }
+        thread = null;
+        if(mIn!=null){
+	        try{
+	        	mIn.close();
+	        }catch(IOException e){}
+	        mIn = null;
+        }
     }
 
     public void freeCameraMemory(){
@@ -256,7 +263,11 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
     public void showFps(boolean b) { showFps = b; }
     public void setSource(MjpegInputStream source) {
     	mIn = source; 
-    	startPlayback();
+    	if(!suspending){
+    		startPlayback();
+    	}else{
+    		resumePlayback();
+    	}
     }
     public void setOverlayPaint(Paint p) { overlayPaint = p; }
     public void setOverlayTextColor(int c) { overlayTextColor = c; }

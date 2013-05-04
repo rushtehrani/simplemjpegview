@@ -37,6 +37,8 @@ public class MjpegActivity extends Activity {
     private int ip_ad4 = 1;
     private int ip_port = 80;
     private String ip_command = "?action=stream";
+    
+    private boolean suspending = false;
  
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,7 +85,10 @@ public class MjpegActivity extends Activity {
     	if(DEBUG) Log.d(TAG,"onResume()");
         super.onResume();
         if(mv!=null){
-        	mv.resumePlayback();
+        	if(suspending){
+        		new DoRead().execute(URL);
+        		suspending = false;
+        	}
         }
 
     }
@@ -97,6 +102,7 @@ public class MjpegActivity extends Activity {
         super.onPause();
         if(mv!=null){
         	mv.stopPlayback();
+        	suspending = true;
         }
     }
     public void onStop() {
