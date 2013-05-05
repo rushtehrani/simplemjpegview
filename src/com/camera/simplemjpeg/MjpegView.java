@@ -202,6 +202,9 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
     public void startPlayback() { 
         if(mIn != null) {
             mRun = true;
+            if(thread==null){
+            	thread = new MjpegViewThread(holder, saved_context);
+            }
             thread.start();    		
         }
     }
@@ -214,8 +217,8 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                 holder.addCallback(this);
                 thread = new MjpegViewThread(holder, saved_context);		
                 thread.start();
+                suspending=false;
             }
-        	suspending=false;
         }
     }
     public void stopPlayback() { 
@@ -223,18 +226,23 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
     		suspending = true;
     	}
         mRun = false;
-        boolean retry = true;
-        while(retry) {
-            try {
-                thread.join();
-                retry = false;
-            } catch (InterruptedException e) {}
+        if(thread!=null){
+        	boolean retry = true;
+	        while(retry) {
+	            try {
+	                thread.join();
+	                retry = false;
+	            } catch (InterruptedException e) {}
+	        }
+	        thread = null;
         }
         if(mIn!=null){
 	        try{
 	        	mIn.close();
 	        }catch(IOException e){}
+	        mIn = null;
         }
+
     }
 
     public void freeCameraMemory(){
@@ -248,7 +256,9 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void surfaceChanged(SurfaceHolder holder, int f, int w, int h) {
-        thread.setSurfaceSize(w, h); 
+    	if(thread!=null){
+    		thread.setSurfaceSize(w, h); 
+    	}
     }
 
     public void surfaceDestroyed(SurfaceHolder holder) { 
