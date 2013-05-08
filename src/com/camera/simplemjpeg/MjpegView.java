@@ -287,4 +287,8 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
     	IMG_WIDTH = w;
     	IMG_HEIGHT = h;
     }
+    
+	public boolean isStreaming(){
+		return mRun;
+	}
 }
